@@ -1,6 +1,7 @@
 package br.com.evandropires.quartz.impl;
 
-import br.com.evandropires.quartz.ThreadPoolRepository;
+import br.com.evandropires.quartz.DynamicThreadPool;
+import br.com.evandropires.quartz.DynamicThreadPoolRepository;
 import org.quartz.SchedulerConfigException;
 import org.quartz.spi.ThreadPool;
 
@@ -11,7 +12,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 /**
  * Created by evandro on 13/03/17.
  */
-public class DynamicThreadPool implements ThreadPool {
+public class ExecutorServiceThreadPool implements ThreadPool, DynamicThreadPool {
 
     private final ExecutorService executor = Executors.newFixedThreadPool(1);
     private int threadCount;
@@ -36,7 +37,7 @@ public class DynamicThreadPool implements ThreadPool {
     @Override
     public void initialize() throws SchedulerConfigException {
         if (threadCount < 0) {
-            throw new SchedulerConfigException("You can't define a pool less then 0.");
+            throw new SchedulerConfigException("Thread count must be > 0");
         }
     }
 
@@ -45,9 +46,7 @@ public class DynamicThreadPool implements ThreadPool {
     }
 
     public void setThreadCount(int threadCount) {
-        this.threadCount = threadCount;
-        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
-        threadPoolExecutor.setCorePoolSize(threadCount);
+        doResize(threadCount);
     }
 
     @Override
@@ -72,7 +71,13 @@ public class DynamicThreadPool implements ThreadPool {
     @Override
     public void setInstanceName(String s) {
         this.instanceName = s;
-        ThreadPoolRepository.getInstance().bind(this.instanceName, this);
+        DynamicThreadPoolRepository.getInstance().bind(this.instanceName, this);
     }
 
+    @Override
+    public void doResize(Integer threadPoolSize) {
+        this.threadCount = threadPoolSize;
+        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
+        threadPoolExecutor.setCorePoolSize(threadCount);
+    }
 }
