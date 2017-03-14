@@ -21,7 +21,7 @@ public class ExecutorServiceThreadPool implements ThreadPool, DynamicThreadPool 
 
     @Override
     public boolean runInThread(Runnable runnable) {
-        if (executor == null) {
+        if (runnable == null) {
             return false;
         }
         executor.submit(runnable);

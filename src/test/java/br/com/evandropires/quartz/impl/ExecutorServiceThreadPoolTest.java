@@ -186,6 +186,8 @@ public class ExecutorServiceThreadPoolTest {
 		}
 
 		Assert.assertEquals(0, scheduler.getCurrentlyExecutingJobs().size());
+
+		scheduler.shutdown(false);
 	}
 
 }
